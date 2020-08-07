@@ -11,3 +11,11 @@ http://localhost:8080/photosaver/images
 or
 
 http://localhost:8080/photosaver/pictures
+
+TO DO
+
+2. Find way to store token
+3. Make searching feature for images
+
+
+https://agileengine.gitlab.io/interview/test-tasks/beQwwuNFStubgcbH/
