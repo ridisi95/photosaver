@@ -19,7 +19,7 @@ public class ExceptionCatcherAspect {
     private static final Logger logger = LoggerFactory.getLogger(ExceptionCatcherAspect.class);
 
     @AfterThrowing(
-            pointcut = "execution(public void com.photosaver.photosaver.scheduler.Scheduler.cronJobSch())",
+            pointcut = "execution(public void com.photosaver.photosaver.scheduler.CronJobService.agileengineComCronJob())",
             throwing = "exc")
     public void unauthorizedUserExceptionAdvice(Throwable exc) {
 

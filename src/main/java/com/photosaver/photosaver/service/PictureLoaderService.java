@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,9 +41,11 @@ public class PictureLoaderService {
 
     public void loadPicturesFromAgileengineCom() {
         ResponseEntity<ImageJson> response;
-        int pageNumber = 0;
+        AtomicInteger pageNumber = new AtomicInteger(0);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(7);
         do {
-            String url = "http://interview.agileengine.com/images?page=" + ++pageNumber;
+            String url = "http://interview.agileengine.com/images?page=" + pageNumber.incrementAndGet() ;
             logger.info("page number is " + pageNumber);
 
             response = restTemplate.exchange(
@@ -52,11 +57,15 @@ public class PictureLoaderService {
             List<String> picturesId = response.getBody().getPictures().stream()
                     .map(Picture::getId).collect(Collectors.toList());
 
-            updatePictureInfo(picturesId);
+            executorService.execute(() -> updatePictureInfo(picturesId));
         } while (response.getBody().isHasMore());
+        executorService.shutdown();
+
+        while(!executorService.isTerminated());
     }
 
     private void updatePictureInfo(List<String> picturesId) {
+        logger.info("current thread " + Thread.currentThread().getName());
         List<Picture> alreadyStoredPictures = Optional.of(pictureRepository.findAllById(picturesId))
                 .orElse(new ArrayList());
 
@@ -105,6 +114,8 @@ public class PictureLoaderService {
     }
 
     private byte[] downloadPicture(String imageLink) {
+        logger.info("current thread " + Thread.currentThread().getName());
+
         ResponseEntity<byte[]> response = null;
         try {
             HttpHeaders headers = new HttpHeaders();
